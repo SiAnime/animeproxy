@@ -8,6 +8,7 @@ import withCORS from "./withCORS.js";
 import parseURL from "./parseURL.js";
 import proxyM3U8 from "./proxyM3U8.js";
 import { proxyTs } from "./proxyTS.js";
+import { proxyRequest } from "./proxyRequest.js";
 
 export default function getHandler(options, proxy) {
   const corsAnywhere = {
@@ -106,7 +107,8 @@ export default function getHandler(options, proxy) {
     }
 
     if (!/^\/https?:/.test(req.url) && !isValidHostName(location.hostname)) {
-      const uri = new URL(req.url ?? web_server_url, "http://localhost:3000");
+      const web_server_url = process.env.PUBLIC_URL || `http://127.0.0.1:8080`;
+      const uri = new URL(req.url ?? "/", web_server_url);
       if (uri.pathname === "/m3u8-proxy") {
         let headers = {};
         try {
@@ -129,6 +131,21 @@ export default function getHandler(options, proxy) {
         }
         const url = uri.searchParams.get("url");
         return proxyTs(url ?? "", headers, req, res);
+      } else if (uri.pathname === "/debug") {
+        const url = uri.searchParams.get("url");
+        if (!url) {
+          res.writeHead(400);
+          res.end("URL parameter required for debug");
+          return;
+        }
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({
+          url: url,
+          timestamp: new Date().toISOString(),
+          headers: req.headers,
+          method: req.method
+        }, null, 2));
+        return;
       } else if (uri.pathname === "/") {
         return res.end(readFileSync(join(__dirname, "../index.html")));
       } else {
