@@ -58,7 +58,7 @@ export default  function onProxyResponse(proxy, proxyReq, proxyRes, req, res) {
   return true;
 }
 
-function proxyRequest(req, res, proxy) {
+export function proxyRequest(req, res, proxy) {
   const location = req.corsAnywhereRequestState.location;
   req.url = location.path;
 
