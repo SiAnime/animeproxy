@@ -1,6 +1,7 @@
 import getHandler from "./getHandler.js";
 import httpProxy from "http-proxy";
 import http from "node:http";
+import https from "node:https";
 
 export default function createServer(options) {
   options = options || {};
